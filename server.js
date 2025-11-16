@@ -48,8 +48,8 @@ app.post('/create-payment-invoice', async (req, res) => {
         invoice: {
             description: description,
             amount: amount.toString(),
-            currency: currency,
         },
+        currency: currency,
         merchant_ref_id: merchant_ref_id,
         user_entity_id: userEntityId,
     };

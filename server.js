@@ -13,6 +13,7 @@
   8. Open `http://localhost:3000/` in your browser.
 */
 
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
@@ -20,7 +21,7 @@ const app = express();
 
 // This is your SECRET API KEY.
 // In a real app, you'd store this in an environment variable (e.g., process.env.THIX_API_KEY)
-const THIX_API_KEY = "bXgINv0TMYEQ0LEnaWDkv5zo6CLDgzudhiOITxx14X3FaTR4NI35a50NtBN7aTfJ";
+const THIX_API_KEY = process.env.THIX_API_KEY;
 const THIX_API_URL = "https://sandbox-api.3thix.com/order/payment/create";
 
 // Middleware to parse JSON bodies and serve static files

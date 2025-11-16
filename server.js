@@ -54,6 +54,8 @@ app.post('/create-payment-invoice', async (req, res) => {
         user_entity_id: userEntityId,
     };
 
+    console.log("Sending payload to 3thix API:", JSON.stringify(apiPayload, null, 2));
+
     try {
         const response = await fetch(THIX_API_URL, {
             method: 'POST',

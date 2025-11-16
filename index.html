@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3thix Payment</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load JQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-lg">
+        <header class="bg-gray-800 text-white p-6">
+            <h1 class="text-2xl font-bold">Complete Your Payment</h1>
+        </header>
+
+        <main class="p-6">
+            <!-- Step 1: Button to Create Invoice -->
+            <div id="step-1-create">
+                <p class="text-gray-700 mb-4">Click the button below to generate your secure payment invoice.</p>
+                <button id="create-invoice-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    Pay Now ($99.00)
+                </button>
+                <div id="loading-spinner" class="hidden text-center mt-4">
+                    <p class="text-gray-600">Generating secure invoice...</p>
+                </div>
+            </div>
+
+            <!-- Step 2: Iframe Container (Initially Hidden) -->
+            <div id="step-2-iframe" class="hidden">
+                <p class="text-sm text-gray-600 mb-4">Your payment widget is ready. Please complete your transaction below.</p>
+                <div class="w-full h-[600px] bg-gray-200 rounded-lg overflow-hidden border">
+                    <iframe 
+                        id="3thix-widget-iframe"
+                        width="100%" 
+                        height="100%" 
+                        frameborder="0"
+                        src=""
+                        allow="payment"
+                    ></iframe>
+                </div>
+            </div>
+            
+            <!-- Step 3: Payment Complete Message (Initially Hidden) -->
+            <div id="step-3-complete" class="hidden p-4 rounded-lg bg-green-50 text-green-700 border border-green-200 mt-6">
+                <h3 class="font-semibold">Payment Successful!</h3>
+                <p>Thank you for your order. Your payment has been completed.</p>
+            </div>
+
+            <!-- Error Message Box -->
+            <div id="error-message" class="hidden p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 mt-6"></div>
+        </main>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            const widgetOrigin = "https://sandbox-pay.3thix.com";
+            const apiKey = 'bXgINv0TMYEQ0LEnaWDkv5zo6CLDgzudhiOITxx14X3FaTR4NI35a50NtBN7aTfJ';
+            const apiUrl = 'https://sandbox-api.3thix.com/order/payment/create';
+
+            // 1. Handle the "Pay Now" button click
+            $('#create-invoice-btn').on('click', function() {
+                // Show loading state
+                $(this).prop('disabled', true).addClass('opacity-50');
+                $('#loading-spinner').removeClass('hidden');
+                $('#error-message').addClass('hidden');
+
+                const paymentData = {
+                    "merchant_ref_id": "order-" + new Date().getTime(),
+                    "user": {
+                        "third_party_id": "user12345",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "email": "john.doe@example.com"
+                    },
+                    "invoice": {
+                        "description": "Test Payment for $99.00",
+                        "amount": "99.00",
+                        "currency": "USD"
+                    }
+                };
+
+                // 2. Make an AJAX call directly to the 3thix API
+                $.ajax({
+                    url: apiUrl,
+                    type: 'POST',
+                    headers: {
+                        'x-api-key': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    data: JSON.stringify(paymentData),
+                    
+                    success: function(response) {
+                        // 3. The API returns the invoice object
+                        if (response.invoice && response.invoice.id) {
+                            const invoiceId = response.invoice.id;
+                            console.log("Received invoiceId:", invoiceId);
+
+                            // 4. Set the iframe source and show it
+                            const iframeSrc = `${widgetOrigin}/?invoiceId=${invoiceId}&anonymous=true&primary_color=%232563eb`;
+                            $('#3thix-widget-iframe').attr('src', iframeSrc);
+                            
+                            // Hide step 1 and show step 2
+                            $('#step-1-create').addClass('hidden');
+                            $('#step-2-iframe').removeClass('hidden');
+                        } else {
+                            showError("Error: Did not receive a valid invoice from the API.");
+                            $('#create-invoice-btn').prop('disabled', false).removeClass('opacity-50');
+                            $('#loading-spinner').addClass('hidden');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle errors from the API
+                        const errorMessage = xhr.responseJSON ? JSON.stringify(xhr.responseJSON) : error;
+                        showError("Error creating invoice: " + errorMessage);
+                        $('#create-invoice-btn').prop('disabled', false).removeClass('opacity-50');
+                        $('#loading-spinner').addClass('hidden');
+                    }
+                });
+            });
+
+            // 5. Listen for the "ORDER_COMPLETED" message from the iframe
+            window.addEventListener("message", (event) => {
+                if (event.origin !== widgetOrigin) {
+                    return; // Security: only accept messages from 3thix
+                }
+
+                if (event.data === "ORDER_COMPLETED") {
+                    console.log("Payment successful!");
+                    // Hide the iframe and show the success message
+                    $('#step-2-iframe').addClass('hidden');
+                    $('#step-3-complete').removeClass('hidden');
+                }
+            }, false);
+
+            function showError(message) {
+                $('#error-message').text(message).removeClass('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

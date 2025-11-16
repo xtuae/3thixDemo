@@ -14,11 +14,9 @@
 */
 
 const express = require('express');
-const fetch = require('node-fetch');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
 
 // This is your SECRET API KEY.
 // In a real app, you'd store this in an environment variable (e.g., process.env.THIX_API_KEY)
@@ -95,6 +93,5 @@ app.post('/create-payment-invoice', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
+// Export the app for Vercel
+module.exports = app;

@@ -21,11 +21,19 @@
         </header>
 
         <main class="p-6">
-            <!-- Step 1: Button to Create Invoice -->
+            <!-- Step 1: Input Fields and Button -->
             <div id="step-1-create">
+                <div class="mb-4">
+                    <label for="item-description" class="block text-sm font-medium text-gray-700">Item Description</label>
+                    <input type="text" id="item-description" value="My Awesome Product" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="amount" class="block text-sm font-medium text-gray-700">Amount (USD)</label>
+                    <input type="number" id="amount" value="99.00" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
                 <p class="text-gray-700 mb-4">Click the button below to generate your secure payment invoice.</p>
                 <button id="create-invoice-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                    Pay Now ($99.00)
+                    Pay Now
                 </button>
                 <div id="loading-spinner" class="hidden text-center mt-4">
                     <p class="text-gray-600">Generating secure invoice...</p>
@@ -61,8 +69,6 @@
     <script>
         $(document).ready(function() {
             const widgetOrigin = "https://sandbox-pay.3thix.com";
-            const apiKey = 'bXgINv0TMYEQ0LEnaWDkv5zo6CLDgzudhiOITxx14X3FaTR4NI35a50NtBN7aTfJ';
-            const apiUrl = 'https://sandbox-api.3thix.com/order/payment/create';
 
             // 1. Handle the "Pay Now" button click
             $('#create-invoice-btn').on('click', function() {
@@ -71,35 +77,24 @@
                 $('#loading-spinner').removeClass('hidden');
                 $('#error-message').addClass('hidden');
 
-                const paymentData = {
-                    "merchant_ref_id": "order-" + new Date().getTime(),
-                    "user": {
-                        "third_party_id": "user12345",
-                        "first_name": "John",
-                        "last_name": "Doe",
-                        "email": "john.doe@example.com"
-                    },
-                    "invoice": {
-                        "description": "Test Payment for $99.00",
-                        "amount": "99.00",
-                        "currency": "USD"
-                    }
+                const paymentDetails = {
+                    description: $('#item-description').val(),
+                    amount: $('#amount').val(),
+                    currency: "USD",
+                    merchant_ref_id: "order-" + new Date().getTime() // A unique ID from your system
                 };
 
-                // 2. Make an AJAX call directly to the 3thix API
+                // 2. Make an AJAX call to YOUR OWN server
                 $.ajax({
-                    url: apiUrl,
+                    url: '/create-payment-invoice', // This is an endpoint on YOUR server
                     type: 'POST',
-                    headers: {
-                        'x-api-key': apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    data: JSON.stringify(paymentData),
+                    contentType: 'application/json',
+                    data: JSON.stringify(paymentDetails),
                     
                     success: function(response) {
-                        // 3. The API returns the invoice object
-                        if (response.invoice && response.invoice.id) {
-                            const invoiceId = response.invoice.id;
+                        // 3. Your server returns the invoiceId
+                        if (response.invoiceId) {
+                            const invoiceId = response.invoiceId;
                             console.log("Received invoiceId:", invoiceId);
 
                             // 4. Set the iframe source and show it
@@ -110,15 +105,12 @@
                             $('#step-1-create').addClass('hidden');
                             $('#step-2-iframe').removeClass('hidden');
                         } else {
-                            showError("Error: Did not receive a valid invoice from the API.");
-                            $('#create-invoice-btn').prop('disabled', false).removeClass('opacity-50');
-                            $('#loading-spinner').addClass('hidden');
+                            showError("Error: Did not receive an invoice ID from server.");
                         }
                     },
                     error: function(xhr, status, error) {
-                        // Handle errors from the API
-                        const errorMessage = xhr.responseJSON ? JSON.stringify(xhr.responseJSON) : error;
-                        showError("Error creating invoice: " + errorMessage);
+                        // Handle errors from your server
+                        showError("Error creating invoice: " + (xhr.responseJSON?.error || error));
                         $('#create-invoice-btn').prop('disabled', false).removeClass('opacity-50');
                         $('#loading-spinner').addClass('hidden');
                     }

@@ -41,19 +41,17 @@ app.post('/create-payment-invoice', async (req, res) => {
     // TODO: You must add a 'user_entity_id' based on the logged-in user.
     // This ID comes from the 3thix /entity/game/user/autosync endpoint.
     // For this example, I am hardcoding a placeholder.
-    // YOU WILL NEED TO CHANGE THIS.
-    const userEntityId = "replace-with-real-user-entity-id";
+    // This ID comes from the 3thix /entity/game/user/autosync endpoint.
+    const userEntityId = "084hCSojRQ097trn";
 
-    if (userEntityId === "replace-with-real-user-entity-id") {
-        console.error("Please update the user_entity_id in server.js");
-        return res.status(500).json({ error: "Server configuration error: user_entity_id not set." });
-    }
-
-    const { amount, currency, merchant_ref_id } = req.body;
+    const { description, amount, currency, merchant_ref_id } = req.body;
 
     const apiPayload = {
-        amount: amount.toString(),
-        currency: currency,
+        invoice: {
+            description: description,
+            amount: amount.toString(),
+            currency: currency,
+        },
         merchant_ref_id: merchant_ref_id,
         user_entity_id: userEntityId,
     };

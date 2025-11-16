@@ -22,6 +22,10 @@ const app = express();
 // This is your SECRET API KEY.
 // In a real app, you'd store this in an environment variable (e.g., process.env.THIX_API_KEY)
 const THIX_API_KEY = process.env.THIX_API_KEY;
+
+if (!THIX_API_KEY) {
+    console.error("FATAL ERROR: The THIX_API_KEY environment variable is not set in Vercel.");
+}
 const THIX_API_URL = "https://sandbox-api.3thix.com/order/payment/create";
 
 // Middleware to parse JSON bodies and serve static files

@@ -23,6 +23,11 @@ const app = express();
 // This is your SECRET API KEY.
 // In a real app, you'd store this in an environment variable (e.g., process.env.THIX_API_KEY)
 const THIX_API_KEY = process.env.THIX_API_KEY;
+
+if (!THIX_API_KEY) {
+    console.error("FATAL ERROR: THIX_API_KEY is not defined. Please set it in your environment variables.");
+    process.exit(1);
+}
 const THIX_API_URL = "https://sandbox-api.3thix.com/order/payment/create";
 const THIX_AUTOSYNC_URL = "https://sandbox-api.3thix.com/entity/game/user/autosync";
 
@@ -66,8 +71,8 @@ async function getOrCreateUserEntityId() {
             throw new Error("Could not parse entity_id from 3thix");
         }
     } catch (error) {
-        console.error("Error calling 3thix autosync API:", error);
-        throw error;
+        console.error("Error in getOrCreateUserEntityId:", error);
+        throw error; // Re-throw the error to be caught by the endpoint's catch block
     }
 }
 
@@ -132,8 +137,8 @@ app.post('/create-payment-invoice', async (req, res) => {
         res.status(200).json({ invoiceId: invoiceId });
 
     } catch (error) {
-        console.error("Error calling 3thix API:", error);
-        res.status(500).json({ error: error.message });
+        console.error("Error in /create-payment-invoice endpoint:", error);
+        res.status(500).json({ error: "An internal server error occurred.", details: error.message });
     }
 });
 

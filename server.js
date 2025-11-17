@@ -16,7 +16,6 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 

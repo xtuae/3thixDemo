@@ -16,6 +16,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 
@@ -23,6 +24,52 @@ const app = express();
 // In a real app, you'd store this in an environment variable (e.g., process.env.THIX_API_KEY)
 const THIX_API_KEY = process.env.THIX_API_KEY;
 const THIX_API_URL = "https://sandbox-api.3thix.com/order/payment/create";
+const THIX_AUTOSYNC_URL = "https://sandbox-api.3thix.com/entity/game/user/autosync";
+
+async function getOrCreateUserEntityId() {
+    // For this demo, we'll use a constant third_party_id to simulate a single user.
+    // In a real application, this would be the logged-in user's ID.
+    const thirdPartyId = "demo-user-123";
+    try {
+        const response = await fetch(THIX_AUTOSYNC_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': THIX_API_KEY
+            },
+            body: JSON.stringify({
+                users: [{
+                    third_party_id: thirdPartyId,
+                    first_name: "John",
+                    last_name: "Doe",
+                    email: `${thirdPartyId}@example.com`,
+                    phone: "+1234567890"
+                }]
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            console.error("3thix API Error (autosync):", data);
+            throw new Error(data.message || 'Failed to create or sync user');
+        }
+
+        // The API returns both created and existing entities.
+        // We can look in both arrays to find our entity_id.
+        const user = data.entities_created.find(u => u.third_party_id === thirdPartyId) ||
+                     data.entities_existing.find(u => u.third_party_id === thirdPartyId);
+
+        if (user && user.entity_id) {
+            return user.entity_id;
+        } else {
+            console.error("Could not find entity_id in 3thix autosync response:", data);
+            throw new Error("Could not parse entity_id from 3thix");
+        }
+    } catch (error) {
+        console.error("Error calling 3thix autosync API:", error);
+        throw error;
+    }
+}
 
 // Middleware to parse JSON bodies and serve static files
 app.use(express.json());
@@ -37,25 +84,21 @@ app.get('/', (req, res) => {
 app.post('/create-payment-invoice', async (req, res) => {
     console.log("Received request to create invoice:", req.body);
 
-    // TODO: You must add a 'user_entity_id' based on the logged-in user.
-    // This ID comes from the 3thix /entity/game/user/autosync endpoint.
-    // For this example, I am hardcoding a placeholder.
-    // This ID comes from the 3thix /entity/game/user/autosync endpoint.
-    const userEntityId = "084hCSojRQ097trn";
-
     const { description, amount, currency, merchant_ref_id } = req.body;
 
-    const apiPayload = {
-        invoice: {
-            description: description,
-            amount: amount.toString(),
-        },
-        currency: currency,
-        merchant_ref_id: merchant_ref_id,
-        user_entity_id: userEntityId,
-    };
-
     try {
+        const userEntityId = await getOrCreateUserEntityId();
+
+        const apiPayload = {
+            invoice: {
+                description: description,
+                amount: amount.toString(),
+            },
+            currency: currency,
+            merchant_ref_id: merchant_ref_id,
+            user_entity_id: userEntityId,
+        };
+
         const response = await fetch(THIX_API_URL, {
             method: 'POST',
             headers: {

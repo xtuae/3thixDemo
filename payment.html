@@ -106,7 +106,7 @@
                             console.log("Received invoiceId:", invoiceId);
 
                             // 4. Set the iframe source and show it
-                            const iframeSrc = `${widgetOrigin}/?invoiceId=${invoiceId}&primary_color=%232563eb`;
+                            const iframeSrc = `${widgetOrigin}/?invoiceId=${invoiceId}&anonymous=true&primary_color=%232563eb`;
                             $('#3thix-widget-iframe').attr('src', iframeSrc);
                             
                             // Hide step 1 and show step 2

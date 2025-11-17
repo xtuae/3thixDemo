@@ -91,7 +91,8 @@ app.post('/create-payment-invoice', async (req, res) => {
     const { description, amount, currency, merchant_ref_id } = req.body;
 
     try {
-        const userEntityId = await getOrCreateUserEntityId();
+        // For anonymous checkout, we no longer need to create a user entity first.
+        // const userEntityId = await getOrCreateUserEntityId();
 
         const apiPayload = {
             invoice: {
@@ -100,7 +101,8 @@ app.post('/create-payment-invoice', async (req, res) => {
             },
             currency: currency,
             merchant_ref_id: merchant_ref_id,
-            user_entity_id: userEntityId,
+            // user_entity_id is omitted for anonymous invoices.
+            // user_entity_id: userEntityId, 
         };
 
         const response = await fetch(THIX_API_URL, {

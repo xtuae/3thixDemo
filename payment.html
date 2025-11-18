@@ -52,18 +52,14 @@
                 </div>
             </div>
 
-            <!-- Step 2: Redirect Container (Initially Hidden) -->
+            <!-- Step 2: Redirect Message (Initially Hidden) -->
             <div id="step-2-redirect" class="hidden">
                 <div class="text-center">
-                    <p class="text-sm text-gray-600 mb-4">Your payment invoice has been created successfully!</p>
-                    <p class="text-sm text-gray-600 mb-6">Click the button below to complete your payment securely.</p>
-                    <button id="redirect-to-payment-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                        Complete Payment
-                    </button>
-                    <p class="text-xs text-gray-500 mt-4">You will be redirected to our secure payment partner.</p>
+                    <p class="text-sm text-gray-600 mb-4">Redirecting to secure payment...</p>
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                 </div>
             </div>
-            
+
             <!-- Step 3: Payment Complete Message (Initially Hidden) -->
             <div id="step-3-complete" class="hidden p-4 rounded-lg bg-green-50 text-green-700 border border-green-200 mt-6">
                 <h3 class="font-semibold">Payment Successful!</h3>
@@ -107,16 +103,13 @@
                             const invoiceId = response.invoiceId;
                             console.log("Received invoiceId:", invoiceId);
 
-                            // Store the payment URL for redirect
-                            window.paymentUrl = `${widgetOrigin}/?invoiceId=${invoiceId}&primary_color=%232563eb`;
-
-                            // Hide step 1 and show step 2
-                            $('#step-1-create').addClass('hidden');
-                            $('#step-2-redirect').removeClass('hidden');
-                            $('#create-invoice-btn').prop('disabled', false).removeClass('opacity-50');
-                            $('#loading-spinner').addClass('hidden');
+                            // Redirect to payment page
+                            const paymentUrl = `${widgetOrigin}/?invoiceId=${invoiceId}&primary_color=%232563eb`;
+                            window.location.href = paymentUrl;
                         } else {
                             showError("Error: Did not receive an invoice ID from server.");
+                            $('#create-invoice-btn').prop('disabled', false).removeClass('opacity-50');
+                            $('#loading-spinner').addClass('hidden');
                         }
                     },
                     error: function(xhr, status, error) {
@@ -128,16 +121,7 @@
                 });
             });
 
-            // Handle the redirect to payment button
-            $(document).on('click', '#redirect-to-payment-btn', function() {
-                if (window.paymentUrl) {
-                    // Open payment page in new window/tab
-                    window.open(window.paymentUrl, '_blank');
-                    // Show success message (user will return after payment)
-                    $('#step-2-redirect').addClass('hidden');
-                    $('#step-3-complete').removeClass('hidden');
-                }
-            });
+
 
             function showError(message) {
                 $('#error-message').text(message).removeClass('hidden');

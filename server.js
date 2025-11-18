@@ -45,19 +45,17 @@ app.post('/create-payment-invoice', async (req, res) => {
     const { description, quantity, amount, currency, merchant_ref_id } = req.body;
 
     try {
-        // Create invoice with proper cart structure for 3thix
+        // Create payment with correct 3thix API format
         const apiPayload = {
-            invoice: {
-                description: description,
-                amount: amount.toString(),
-            },
+            rail: "CREDIT_CARD",
+            currency: currency,
+            amount: amount.toString(),
+            merchant_ref_id: merchant_ref_id,
             cart: [{
                 product_name: description,
                 qty_unit: parseInt(quantity) || 1,
                 price_unit: amount.toString(),
             }],
-            currency: currency,
-            merchant_ref_id: merchant_ref_id,
         };
 
         const response = await fetch(THIX_API_URL, {

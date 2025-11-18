@@ -105,7 +105,7 @@
 
                             // Redirect to payment page
                             const paymentUrl = `${widgetOrigin}/?invoiceId=${invoiceId}&primary_color=%232563eb`;
-                            window.location.href = paymentUrl;
+                            window.location.replace(paymentUrl);
                         } else {
                             showError("Error: Did not receive an invoice ID from server.");
                             $('#create-invoice-btn').prop('disabled', false).removeClass('opacity-50');

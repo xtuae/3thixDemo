@@ -45,12 +45,16 @@ app.post('/create-payment-invoice', async (req, res) => {
     const { description, quantity, amount, currency, merchant_ref_id } = req.body;
 
     try {
-        // Create invoice without any user data for truly anonymous checkout
+        // Create invoice with line items for proper structure
         const apiPayload = {
             invoice: {
                 description: description,
-                quantity: parseInt(quantity) || 1, // Default to 1 if not provided
                 amount: amount.toString(),
+                line_items: [{
+                    description: description,
+                    quantity: parseInt(quantity) || 1,
+                    amount: amount.toString(),
+                }]
             },
             currency: currency,
             merchant_ref_id: merchant_ref_id,

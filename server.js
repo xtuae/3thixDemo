@@ -42,13 +42,15 @@ app.get('/', (req, res) => {
 app.post('/create-payment-invoice', async (req, res) => {
     console.log("Received request to create invoice:", req.body);
 
-    const { description, amount, currency, merchant_ref_id } = req.body;
+    const { description, quantity, amount, currency, merchant_ref_id } = req.body;
 
     try {
         // For a truly anonymous flow, we omit all user data.
+        // User data is not passed to maintain anonymity.
         const apiPayload = {
             invoice: {
                 description: description,
+                quantity: quantity || 1, // Default to 1 if not provided
                 amount: amount.toString(),
             },
             currency: currency,

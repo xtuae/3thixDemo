@@ -52,18 +52,15 @@
                 </div>
             </div>
 
-            <!-- Step 2: Iframe Container (Initially Hidden) -->
-            <div id="step-2-iframe" class="hidden">
-                <p class="text-sm text-gray-600 mb-4">Your payment widget is ready. Please complete your transaction below.</p>
-                <div class="w-full h-[600px] bg-gray-200 rounded-lg overflow-hidden border">
-                    <iframe 
-                        id="3thix-widget-iframe"
-                        width="100%" 
-                        height="100%" 
-                        frameborder="0"
-                        src=""
-                        allow="payment"
-                    ></iframe>
+            <!-- Step 2: Redirect Container (Initially Hidden) -->
+            <div id="step-2-redirect" class="hidden">
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 mb-4">Your payment invoice has been created successfully!</p>
+                    <p class="text-sm text-gray-600 mb-6">Click the button below to complete your payment securely.</p>
+                    <button id="redirect-to-payment-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                        Complete Payment
+                    </button>
+                    <p class="text-xs text-gray-500 mt-4">You will be redirected to our secure payment partner.</p>
                 </div>
             </div>
             
@@ -110,13 +107,14 @@
                             const invoiceId = response.invoiceId;
                             console.log("Received invoiceId:", invoiceId);
 
-                            // 4. Set the iframe source and show it
-                            const iframeSrc = `${widgetOrigin}/?invoiceId=${invoiceId}&primary_color=%232563eb`;
-                            $('#3thix-widget-iframe').attr('src', iframeSrc);
-                            
+                            // Store the payment URL for redirect
+                            window.paymentUrl = `${widgetOrigin}/?invoiceId=${invoiceId}&primary_color=%232563eb`;
+
                             // Hide step 1 and show step 2
                             $('#step-1-create').addClass('hidden');
-                            $('#step-2-iframe').removeClass('hidden');
+                            $('#step-2-redirect').removeClass('hidden');
+                            $('#create-invoice-btn').prop('disabled', false).removeClass('opacity-50');
+                            $('#loading-spinner').addClass('hidden');
                         } else {
                             showError("Error: Did not receive an invoice ID from server.");
                         }
@@ -130,19 +128,16 @@
                 });
             });
 
-            // 5. Listen for the "ORDER_COMPLETED" message from the iframe
-            window.addEventListener("message", (event) => {
-                if (event.origin !== widgetOrigin) {
-                    return; // Security: only accept messages from 3thix
-                }
-
-                if (event.data === "ORDER_COMPLETED") {
-                    console.log("Payment successful!");
-                    // Hide the iframe and show the success message
-                    $('#step-2-iframe').addClass('hidden');
+            // Handle the redirect to payment button
+            $(document).on('click', '#redirect-to-payment-btn', function() {
+                if (window.paymentUrl) {
+                    // Open payment page in new window/tab
+                    window.open(window.paymentUrl, '_blank');
+                    // Show success message (user will return after payment)
+                    $('#step-2-redirect').addClass('hidden');
                     $('#step-3-complete').removeClass('hidden');
                 }
-            }, false);
+            });
 
             function showError(message) {
                 $('#error-message').text(message).removeClass('hidden');

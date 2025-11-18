@@ -45,23 +45,15 @@ app.post('/create-payment-invoice', async (req, res) => {
     const { description, quantity, amount, currency, merchant_ref_id } = req.body;
 
     try {
-        // For anonymous checkout, we provide minimal guest user data
-        // while still maintaining anonymity in the payment flow
-        const guestId = "guest-" + Date.now();
+        // Create invoice without any user data for truly anonymous checkout
         const apiPayload = {
             invoice: {
                 description: description,
-                quantity: quantity || 1, // Default to 1 if not provided
+                quantity: parseInt(quantity) || 1, // Default to 1 if not provided
                 amount: amount.toString(),
             },
             currency: currency,
             merchant_ref_id: merchant_ref_id,
-            user: {
-                third_party_id: guestId,
-                first_name: "Guest",
-                last_name: "User",
-                email: `${guestId}@example.com`,
-            }
         };
 
         const response = await fetch(THIX_API_URL, {

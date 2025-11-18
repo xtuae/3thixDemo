@@ -103,8 +103,8 @@
                             const invoiceId = response.invoiceId;
                             console.log("Received invoiceId:", invoiceId);
 
-                            // Redirect to payment page
-                            const paymentUrl = `${widgetOrigin}/?invoiceId=${invoiceId}&primary_color=%232563eb`;
+                            // Redirect to payment page with anonymous mode
+                            const paymentUrl = `${widgetOrigin}/?invoiceId=${invoiceId}&anonymous=true&primary_color=%232563eb`;
                             window.location.replace(paymentUrl);
                         } else {
                             showError("Error: Did not receive an invoice ID from server.");

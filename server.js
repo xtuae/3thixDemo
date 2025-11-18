@@ -42,10 +42,10 @@ app.get('/', (req, res) => {
 app.post('/create-payment-invoice', async (req, res) => {
     console.log("Received request to create invoice:", req.body);
 
-    const { description, amount, currency, merchant_ref_id, user } = req.body;
+    const { description, amount, currency, merchant_ref_id } = req.body;
 
     try {
-        // The user object is now passed from the frontend
+        // For a truly anonymous flow, we omit all user data.
         const apiPayload = {
             invoice: {
                 description: description,
@@ -53,7 +53,6 @@ app.post('/create-payment-invoice', async (req, res) => {
             },
             currency: currency,
             merchant_ref_id: merchant_ref_id,
-            user: user
         };
 
         const response = await fetch(THIX_API_URL, {

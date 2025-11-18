@@ -45,17 +45,17 @@ app.post('/create-payment-invoice', async (req, res) => {
     const { description, quantity, amount, currency, merchant_ref_id } = req.body;
 
     try {
-        // Create invoice with line items for proper structure
+        // Create invoice with proper cart structure for 3thix
         const apiPayload = {
             invoice: {
                 description: description,
                 amount: amount.toString(),
-                line_items: [{
-                    description: description,
-                    quantity: parseInt(quantity) || 1,
-                    amount: amount.toString(),
-                }]
             },
+            cart: [{
+                product_name: description,
+                qty_unit: parseInt(quantity) || 1,
+                price_unit: amount.toString(),
+            }],
             currency: currency,
             merchant_ref_id: merchant_ref_id,
         };

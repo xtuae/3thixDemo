@@ -22,12 +22,12 @@ const app = express();
 // This is your SECRET API KEY.
 // In a real app, you'd store this in an environment variable (e.g., process.env.THIX_API_KEY)
 const THIX_API_KEY = process.env.THIX_API_KEY;
+const THIX_API_URL = process.env.THIX_API_URL;
 
-if (!THIX_API_KEY) {
-    console.error("FATAL ERROR: THIX_API_KEY is not defined. Please set it in your environment variables.");
+if (!THIX_API_KEY || !THIX_API_URL) {
+    console.error("FATAL ERROR: THIX_API_KEY or THIX_API_URL is not defined. Please set them in your environment variables.");
     process.exit(1);
 }
-const THIX_API_URL = "https://sandbox-api.3thix.com/order/payment/create";
 
 // Middleware to parse JSON bodies and serve static files
 app.use(express.json());
@@ -58,7 +58,7 @@ app.post('/create-payment-invoice', async (req, res) => {
             }],
         };
 
-        const response = await fetch(THIX_API_URL, {
+        const response = await fetch(`${THIX_API_URL}/order/payment/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
